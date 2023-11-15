@@ -116,8 +116,7 @@
 			updater.style.display = "block";
 		});
 		ipcRenderer.on("update-not-available", (event, data) => {
-			updater.style.display = "none";
-			updater.innerHTML = "";
+			connexion.innerText = "Nouvelle version en cours de téléchargement...";
 		});
 		ipcRenderer.on("download-progress", (event, data) => {
 			connexion.innerText = 'Téléchargement en cours...';

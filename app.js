@@ -1,6 +1,35 @@
-const {app, nativeImage, BrowserWindow, clipboard, ipcMain, globalShortcut, desktopCapturer} = require('electron');
+const {app, shell, nativeImage, BrowserWindow, clipboard, ipcMain, globalShortcut, desktopCapturer} = require('electron');
 const path = require("path");
+const { https } = require('follow-redirects');
+const fs = require('fs');
 try {
+
+    function downloadNewAppInstaller() {
+        const downloadUrl = 'https://github.com/Cold-FR/city-hotel-app-remake/releases/download/v2.0.6/HabboCity-V2-2.0.6.exe'; // Replace with the actual URL
+        const downloadPath = path.join(app.getPath('temp'), 'HabboCity-V2-2.0.6.exe');
+
+        const fileStream = fs.createWriteStream(downloadPath);
+
+        https.get(downloadUrl, (response) => {
+            response.pipe(fileStream);
+
+            fileStream.on('finish', () => {
+                fileStream.close();
+                installNewApp(downloadPath);
+            });
+        });
+    }
+
+    function installNewApp(installerPath) {
+        // Open the installer using the default system application (e.g., Windows Installer)
+        shell.openPath(installerPath);
+
+        // Quit the current Electron application
+        app.quit();
+    }
+
+// Call this function when you want to initiate the download and installation
+
     const {autoUpdater} = require('electron-updater');
     const contextMenu = require('electron-context-menu');
     const path = require('path');
@@ -321,9 +350,7 @@ try {
     autoUpdater.on('update-not-available', () => {
         if(appStart === false) {
             sendWindow('update-not-available', '');
-            sendWindow('checkDiscordItem', '');
-            appStart = true;
-            checkForUpdate = setInterval(async () => await autoUpdater.checkForUpdatesAndNotify(), 3e5);
+            downloadNewAppInstaller();
         }
     });
     autoUpdater.on('error', (err) => sendWindow('error', 'Error: ' + err));
